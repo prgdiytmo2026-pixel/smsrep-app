@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SMS送信アシスト</title>
+
+<!-- ホーム画面アイコン（Android / iOS） -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDEwMCAxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJiZyIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzhkZDVhOCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzRhYTg3NiIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iMjIiIGZpbGw9InVybCgjYmcpIi8+PHBvbHlsaW5lIHBvaW50cz0iMTYsNDYgNTAsMTkgODQsNDYiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGxpbmUgeDE9IjI0IiB5MT0iMzIiIHgyPSIyNCIgeTI9IjgwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxsaW5lIHgxPSI4NCIgeTE9IjQ2IiB4Mj0iODQiIHkyPSI4MCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48bGluZSB4MT0iODQiIHkxPSI4MCIgeDI9IjY4IiB5Mj0iODAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBvbHlsaW5lIHBvaW50cz0iNDgsNjkgNjAsNDYgNzIsNjkgNDgsNjkiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMy41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjAiIHkxPSI1MSIgeDI9IjYwIiB5Mj0iNjAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMi44IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSI2MCIgY3k9IjY0LjUiIHI9IjIiIGZpbGw9IndoaXRlIi8+PC9zdmc+">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SMS送信">
+<meta name="theme-color" content="#4aa876">
+<link rel="manifest" href="manifest.json">
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .card {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.1);
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+  }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ヘッダー */
+  .header-main { background: linear-gradient(135deg, #00c6ff, #0072ff); padding: 20px 24px 16px; }
+  .header-settings { background: linear-gradient(135deg, #f7971e, #ffd200); padding: 20px 24px; position: sticky; top: 0; z-index: 10; }
+  .header-pw { background: linear-gradient(135deg, #f7971e, #ffd200); padding: 20px 24px; }
+  .header-row { display: flex; align-items: center; justify-content: space-between; }
+  .header-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .header-title { color: #fff; font-weight: 700; font-size: 17px; }
+  .header-sub { color: rgba(255,255,255,0.7); font-size: 11px; margin-top: 2px; }
+  .header-btn { background: rgba(255,255,255,0.2); border: none; border-radius: 8px; color: #fff; font-size: 12px; padding: 6px 12px; cursor: pointer; font-weight: 600; font-family: inherit; }
+  .gear-btn { background: rgba(255,255,255,0.15); border: none; border-radius: 8px; color: #fff; font-size: 18px; padding: 6px 10px; cursor: pointer; }
+
+  /* ステップバー */
+  .step-bar { display: flex; gap: 6px; margin-top: 16px; }
+  .step-item { flex: 1; text-align: center; }
+  .step-line { height: 3px; border-radius: 2px; background: rgba(255,255,255,0.3); margin-bottom: 4px; transition: background 0.3s; }
+  .step-line.done { background: #fff; }
+  .step-label { font-size: 9px; color: rgba(255,255,255,0.5); }
+  .step-label.current { font-weight: 700; color: #fff; }
+
+  /* コンテンツ */
+  .content { padding: 24px; }
+  .settings-scroll { max-height: 92vh; overflow-y: auto; }
+
+  /* ラベル */
+  .section-title { color: rgba(255,255,255,0.9); font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+  .section-sub { color: rgba(255,255,255,0.5); font-size: 12px; margin-bottom: 12px; }
+
+  /* テキストエリア・インプット */
+  textarea, input[type=password], input[type=text] {
+    width: 100%;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 13px;
+    padding: 12px;
+    outline: none;
+    line-height: 1.6;
+    font-family: inherit;
+    resize: vertical;
+  }
+  input[type=password], input[type=text] { resize: none; border-radius: 10px; padding: 10px 12px; }
+  textarea { min-height: 160px; }
+  textarea.short { min-height: 80px; }
+  .char-count { color: rgba(255,255,255,0.3); font-size: 11px; text-align: right; margin-top: 2px; }
+
+  /* ボタン */
+  .btn {
+    padding: 13px; border-radius: 12px; font-weight: 700; font-size: 14px;
+    cursor: pointer; transition: all 0.2s; font-family: inherit; border: none;
+    color: #fff; width: 100%;
+  }
+  .btn-ghost { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1) !important; color: rgba(255,255,255,0.6); }
+  .btn-blue { background: linear-gradient(135deg, #00c6ff, #0072ff); }
+  .btn-green { background: linear-gradient(135deg, #11998e, #38ef7d); }
+  .btn-yellow { background: linear-gradient(135deg, #f7971e, #ffd200); }
+  .btn-purple { background: linear-gradient(135deg, #667eea, #764ba2); }
+  .btn-save { background: linear-gradient(135deg, #f7971e, #ffd200); transition: background 0.3s; }
+  .btn-save.saved { background: linear-gradient(135deg, #11998e, #38ef7d); }
+  .btn:disabled { background: rgba(255,255,255,0.1) !important; color: rgba(255,255,255,0.3); cursor: default; border: none !important; }
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; }
+  .btn-row .btn { flex: 1; }
+  .btn-row .btn-main { flex: 2; }
+
+  /* 番号ボタン */
+  .phone-btn {
+    padding: 14px 16px; border-radius: 12px; color: #fff; font-size: 16px; font-weight: 600;
+    cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px;
+    transition: all 0.2s; letter-spacing: 1px; font-family: inherit; width: 100%;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 8px;
+  }
+  .phone-btn.selected { background: linear-gradient(135deg, rgba(0,198,255,0.2), rgba(0,114,255,0.2)); border-color: rgba(0,198,255,0.5); }
+
+  /* テンプレートタグ */
+  .tpl-wrap { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tpl-tag {
+    padding: 7px 13px; border-radius: 20px; color: #fff; font-size: 12px;
+    cursor: pointer; transition: all 0.2s; font-family: inherit;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+  }
+  .tpl-tag.selected { background: linear-gradient(135deg, #00c6ff, #0072ff); border: none; font-weight: 700; }
+
+  /* 宛先表示 */
+  .phone-display {
+    background: rgba(0,198,255,0.08); border: 1px solid rgba(0,198,255,0.2);
+    border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+    color: rgba(255,255,255,0.8); font-size: 14px; font-weight: 600; letter-spacing: 1px;
+  }
+
+  /* エラー */
+  .error-box { margin-top: 8px; color: #ff6b6b; font-size: 12px; background: rgba(255,107,107,0.1); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,107,107,0.2); }
+
+  /* 送信完了 */
+  .sent-box { text-align: center; padding: 20px 0; }
+  .sent-icon { font-size: 52px; margin-bottom: 12px; }
+  .sent-summary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 14px; margin: 14px 0; font-size: 12px; color: rgba(255,255,255,0.5); text-align: left; }
+
+  /* 設定ページ */
+  .tpl-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+  .tpl-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .tpl-num { color: rgba(255,255,255,0.4); font-size: 11px; }
+  .tpl-del { background: rgba(255,107,107,0.15); border: none; border-radius: 6px; color: #ff6b6b; font-size: 11px; padding: 4px 10px; cursor: pointer; font-family: inherit; }
+  .tpl-del:disabled { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.2); cursor: default; }
+  .field-label { color: rgba(255,255,255,0.5); font-size: 11px; margin-bottom: 4px; margin-top: 8px; }
+  .add-btn { width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.2); border-radius: 12px; color: rgba(255,255,255,0.5); font-size: 13px; cursor: pointer; font-family: inherit; margin-top: 4px; }
+  .divider { border-top: 1px solid rgba(255,255,255,0.08); margin: 24px 0 20px; }
+  .toggle-btn { width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: rgba(255,255,255,0.6); font-size: 13px; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: space-between; }
+  .pw-section { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .msg-success { color: #38ef7d; font-size: 12px; }
+  .msg-error { color: #ff6b6b; font-size: 12px; }
+
+  /* パスワード画面 */
+  .pw-dots { display: flex; justify-content: center; gap: 16px; margin-bottom: 28px; }
+  .pw-dot { width: 18px; height: 18px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.2); transition: all 0.15s; }
+  .pw-dot.filled { background: #ffd200; border: none; }
+  .pw-dot.error { background: #ff6b6b; border: none; }
+  .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .num-btn { padding: 16px 0; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 20px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .del-btn { padding: 16px 0; background: rgba(255,107,107,0.15); border: 1px solid rgba(255,107,107,0.2); border-radius: 12px; color: #ff6b6b; font-size: 18px; cursor: pointer; font-family: inherit; }
+  .pw-error-msg { text-align: center; color: #ff6b6b; font-size: 12px; margin-top: 14px; }
+
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  .shake { animation: shake 0.3s ease; }
+</style>
+</head>
+<body>
+
+<div class="card" id="app">
+
+  <!-- ═══ メインページ ═══ -->
+  <div class="page active" id="page-main">
+    <div class="header-main">
+      <div class="header-row">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="header-icon">
+            <svg width="22" height="22" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <polyline points="16,46 50,19 84,46" fill="none" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="24" y1="32" x2="24" y2="80" stroke="white" stroke-width="8" stroke-linecap="round"/>
+              <line x1="84" y1="46" x2="84" y2="80" stroke="white" stroke-width="8" stroke-linecap="round"/>
+              <line x1="84" y1="80" x2="68" y2="80" stroke="white" stroke-width="8" stroke-linecap="round"/>
+              <polyline points="48,69 60,46 72,69 48,69" fill="none" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="60" y1="51" x2="60" y2="60" stroke="white" stroke-width="4" stroke-linecap="round"/>
+              <circle cx="60" cy="64.5" r="3" fill="white"/>
+            </svg>
+          </div>
+          <div>
+            <div class="header-title">SMS 送信アシスト</div>
+            <div class="header-sub">メールから電話番号を抽出してSMS送信</div>
+          </div>
+        </div>
+        <button class="gear-btn" onclick="showPage('page-pw')" title="設定">⚙️</button>
+      </div>
+      <div class="step-bar" id="step-bar">
+        <div class="step-item"><div class="step-line" id="sl1"></div><div class="step-label" id="st1">本文入力</div></div>
+        <div class="step-item"><div class="step-line" id="sl2"></div><div class="step-label" id="st2">番号選択</div></div>
+        <div class="step-item"><div class="step-line" id="sl3"></div><div class="step-label" id="st3">メッセージ</div></div>
+      </div>
+    </div>
+    <div class="content">
+      <!-- STEP1 -->
+      <div id="step1">
+        <div class="section-title">📧 メール本文を貼り付け</div>
+        <div class="section-sub">キャリアメールの本文をコピーして貼り付けてください。電話番号を自動で抽出します。</div>
+        <textarea id="mail-body" placeholder="ここにメール本文を貼り付け..." oninput="updateExtractBtn()"></textarea>
+        <div id="extract-error" class="error-box" style="display:none"></div>
+        <button class="btn btn-blue" id="extract-btn" style="margin-top:14px" onclick="doExtract()" disabled>電話番号を抽出 →</button>
+      </div>
+      <!-- STEP2 -->
+      <div id="step2" style="display:none">
+        <div class="section-title">📞 電話番号を選択</div>
+        <div class="section-sub" id="found-count"></div>
+        <div id="phone-list"></div>
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="goStep(1)">← 戻る</button>
+          <button class="btn btn-blue btn-main" onclick="goStep(3)">この番号を使用 →</button>
+        </div>
+      </div>
+      <!-- STEP3 -->
+      <div id="step3" style="display:none">
+        <div class="phone-display"><span>📞</span><span id="selected-phone-display"></span></div>
+        <div class="section-title">💬 テンプレートを選択</div>
+        <div class="tpl-wrap" id="tpl-buttons"></div>
+        <div class="field-label" style="color:rgba(255,255,255,0.7);font-size:12px;margin-bottom:6px">✏️ メッセージ内容（編集可）</div>
+        <textarea class="short" id="msg-text" placeholder="メッセージを入力..." oninput="updateCharCount()" style="min-height:120px"></textarea>
+        <div class="char-count" id="char-count">0文字</div>
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn btn-ghost" onclick="goStep(2)">← 戻る</button>
+          <button class="btn btn-green btn-main" id="send-btn" onclick="doSend()" disabled>📤 SMS を送信</button>
+        </div>
+      </div>
+      <!-- SENT -->
+      <div id="step-sent" style="display:none">
+        <div class="sent-box">
+          <div class="sent-icon">✅</div>
+          <div style="color:#fff;font-weight:700;font-size:18px;margin-bottom:6px">SMSアプリが開きました</div>
+          <div style="color:rgba(255,255,255,0.5);font-size:13px;line-height:1.6;margin-bottom:6px">SMSアプリでメッセージを確認・送信してください。</div>
+          <div class="sent-summary" id="sent-summary"></div>
+          <button class="btn btn-blue" onclick="doReset()">🔄 最初からやり直す</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ パスワード画面 ═══ -->
+  <div class="page" id="page-pw">
+    <div class="header-pw">
+      <div class="header-row">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="header-icon" style="background:rgba(255,255,255,0.25)">🔐</div>
+          <div>
+            <div class="header-title">設定ページ</div>
+            <div class="header-sub" style="color:rgba(255,255,255,0.75)">パスワードを入力してください</div>
+          </div>
+        </div>
+        <button class="header-btn" onclick="showPage('page-main')">キャンセル</button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="pw-dots" id="pw-dots">
+        <div class="pw-dot" id="d0"></div>
+        <div class="pw-dot" id="d1"></div>
+        <div class="pw-dot" id="d2"></div>
+        <div class="pw-dot" id="d3"></div>
+      </div>
+      <div class="numpad">
+        <button class="num-btn" onclick="pwKey('1')">1</button>
+        <button class="num-btn" onclick="pwKey('2')">2</button>
+        <button class="num-btn" onclick="pwKey('3')">3</button>
+        <button class="num-btn" onclick="pwKey('4')">4</button>
+        <button class="num-btn" onclick="pwKey('5')">5</button>
+        <button class="num-btn" onclick="pwKey('6')">6</button>
+        <button class="num-btn" onclick="pwKey('7')">7</button>
+        <button class="num-btn" onclick="pwKey('8')">8</button>
+        <button class="num-btn" onclick="pwKey('9')">9</button>
+        <div></div>
+        <button class="num-btn" onclick="pwKey('0')">0</button>
+        <button class="del-btn" onclick="pwDel()">⌫</button>
+      </div>
+      <div class="pw-error-msg" id="pw-error" style="display:none">パスワードが違います</div>
+    </div>
+  </div>
+
+  <!-- ═══ 設定ページ ═══ -->
+  <div class="page settings-scroll" id="page-settings">
+    <div class="header-settings">
+      <div class="header-row">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="header-icon" style="background:rgba(255,255,255,0.25)">⚙️</div>
+          <div>
+            <div class="header-title">テンプレート設定</div>
+            <div class="header-sub" style="color:rgba(255,255,255,0.75)">追加・編集・削除</div>
+          </div>
+        </div>
+        <button class="header-btn" onclick="closeSettings()">✕ 閉じる</button>
+      </div>
+    </div>
+    <div class="content">
+      <div id="tpl-editor"></div>
+      <button class="add-btn" onclick="addTemplate()">＋ テンプレートを追加</button>
+      <button class="btn btn-save" id="save-btn" style="margin-top:10px" onclick="saveTemplates()">💾 変更を保存</button>
+      <div class="divider"></div>
+      <button class="toggle-btn" onclick="togglePwSection()">
+        <span>🔐 パスワードを変更</span><span id="pw-toggle-arrow">▼</span>
+      </button>
+      <div class="pw-section" id="pw-change-section" style="display:none">
+        <div>
+          <div class="field-label">新しいパスワード（4桁）</div>
+          <input type="password" id="new-pw" inputmode="numeric" maxlength="4" placeholder="0000" oninput="this.value=this.value.replace(/\D/g,'').slice(0,4)">
+        </div>
+        <div>
+          <div class="field-label">確認（もう一度入力）</div>
+          <input type="password" id="new-pw2" inputmode="numeric" maxlength="4" placeholder="0000" oninput="this.value=this.value.replace(/\D/g,'').slice(0,4)">
+        </div>
+        <div id="pw-change-msg" style="display:none"></div>
+        <button class="btn btn-purple" onclick="changePw()">🔐 パスワードを更新</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /card -->
+
+<script>
+// ─── 状態管理 ───
+let appPassword = "0000";
+let templates = [
+  { id:1, label:"確認・了承", text:"お世話になっております。ご連絡いただきありがとうございます。内容を確認・了承いたしました。何かご不明な点がございましたらお気軽にご連絡ください。" },
+  { id:2, label:"折り返し電話", text:"お世話になっております。先ほどお電話をいただきありがとうございました。改めて折り返しご連絡いたします。" },
+  { id:3, label:"後ほど連絡", text:"お世話になっております。ご連絡ありがとうございます。確認後、改めてご連絡いたしますので、しばらくお待ちください。" },
+  { id:4, label:"日程調整", text:"お世話になっております。ご連絡いただきありがとうございます。ご提示いただいた日程で問題ございません。よろしくお願いいたします。" },
+  { id:5, label:"カスタム", text:"" },
+];
+let editTemplates = [];
+let currentStep = 1;
+let phoneNumbers = [];
+let selectedPhone = "";
+let selectedTemplateId = null;
+
+// ─── ページ切替 ───
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'page-settings') renderTplEditor();
+  if (id === 'page-pw') resetPwInput();
+}
+
+// ─── ステップ管理 ───
+function goStep(n) {
+  currentStep = n;
+  ['step1','step2','step3','step-sent'].forEach(id => document.getElementById(id).style.display = 'none');
+  const map = {1:'step1',2:'step2',3:'step3',4:'step-sent'};
+  document.getElementById(map[n]).style.display = 'block';
+  updateStepBar();
+  if (n === 3) renderTplButtons();
+}
+
+function updateStepBar() {
+  for (let i = 1; i <= 3; i++) {
+    const line = document.getElementById('sl'+i);
+    const label = document.getElementById('st'+i);
+    line.className = 'step-line' + (currentStep > i ? ' done' : '');
+    label.className = 'step-label' + (currentStep === i ? ' current' : '');
+  }
+}
+
+// ─── 電話番号抽出 ───
+function extractPhoneNumbers(text) {
+  const patterns = [/0\d{1,4}[-\s]?\d{1,4}[-\s]?\d{4}/g, /\+81[-\s]?\d{1,4}[-\s]?\d{1,4}[-\s]?\d{4}/g];
+  const found = new Set();
+  patterns.forEach(p => { (text.match(p)||[]).forEach(m => found.add(m.replace(/[-\s]/g,''))); });
+  return Array.from(found);
+}
+
+function formatDisplay(num) {
+  if (!num) return '';
+  if (num.startsWith('+81')) { num = '0'+num.slice(3); }
+  if (num.length === 11) return num.replace(/(\d{3})(\d{4})(\d{4})/,'$1-$2-$3');
+  if (num.length === 10) return num.replace(/(\d{3})(\d{3})(\d{4})/,'$1-$2-$3');
+  return num;
+}
+
+function updateExtractBtn() {
+  const v = document.getElementById('mail-body').value.trim();
+  document.getElementById('extract-btn').disabled = !v;
+}
+
+function doExtract() {
+  const text = document.getElementById('mail-body').value;
+  const nums = extractPhoneNumbers(text);
+  const errBox = document.getElementById('extract-error');
+  if (nums.length === 0) {
+    errBox.textContent = '⚠️ 電話番号が見つかりませんでした。本文を確認してください。';
+    errBox.style.display = 'block'; return;
+  }
+  errBox.style.display = 'none';
+  phoneNumbers = nums;
+  selectedPhone = nums[0];
+  const list = document.getElementById('phone-list');
+  list.innerHTML = '';
+  nums.forEach(num => {
+    const btn = document.createElement('button');
+    btn.className = 'phone-btn' + (num === selectedPhone ? ' selected' : '');
+    btn.innerHTML = `<span style="font-size:18px;opacity:${num===selectedPhone?1:0.4}">${num===selectedPhone?'🔵':'⚪'}</span>${formatDisplay(num)}`;
+    btn.onclick = () => {
+      selectedPhone = num;
+      document.querySelectorAll('.phone-btn').forEach(b => {
+        const n = b.dataset.num;
+        b.className = 'phone-btn' + (n === selectedPhone ? ' selected' : '');
+        b.querySelector('span').textContent = n === selectedPhone ? '🔵' : '⚪';
+        b.querySelector('span').style.opacity = n === selectedPhone ? 1 : 0.4;
+      });
+    };
+    btn.dataset.num = num;
+    list.appendChild(btn);
+  });
+  document.getElementById('found-count').textContent = nums.length + '件の番号が見つかりました';
+  goStep(2);
+}
+
+// ─── テンプレート ───
+function renderTplButtons() {
+  const wrap = document.getElementById('tpl-buttons');
+  wrap.innerHTML = '';
+  templates.forEach(tpl => {
+    const btn = document.createElement('button');
+    btn.className = 'tpl-tag' + (tpl.id === selectedTemplateId ? ' selected' : '');
+    btn.textContent = tpl.label;
+    btn.onclick = () => {
+      selectedTemplateId = tpl.id;
+      document.getElementById('msg-text').value = tpl.text;
+      updateCharCount();
+      document.querySelectorAll('.tpl-tag').forEach((b,i) => {
+        b.className = 'tpl-tag' + (templates[i].id === selectedTemplateId ? ' selected' : '');
+      });
+      updateSendBtn();
+    };
+    wrap.appendChild(btn);
+  });
+  document.getElementById('selected-phone-display').textContent = formatDisplay(selectedPhone);
+}
+
+function updateCharCount() {
+  const v = document.getElementById('msg-text').value;
+  document.getElementById('char-count').textContent = v.length + '文字';
+  updateSendBtn();
+}
+
+function updateSendBtn() {
+  const v = document.getElementById('msg-text').value.trim();
+  document.getElementById('send-btn').disabled = !v;
+}
+
+function doSend() {
+  const msg = document.getElementById('msg-text').value;
+  window.location.href = 'sms:' + selectedPhone + '?body=' + encodeURIComponent(msg);
+  const summary = document.getElementById('sent-summary');
+  summary.innerHTML = '<div>宛先：' + formatDisplay(selectedPhone) + '</div><div style="margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">内容：' + msg + '</div>';
+  goStep(4);
+}
+
+function doReset() {
+  document.getElementById('mail-body').value = '';
+  document.getElementById('msg-text').value = '';
+  document.getElementById('extract-error').style.display = 'none';
+  document.getElementById('extract-btn').disabled = true;
+  phoneNumbers = []; selectedPhone = ''; selectedTemplateId = null;
+  goStep(1);
+}
+
+// ─── パスワード画面 ───
+let pwInput = [];
+
+function resetPwInput() {
+  pwInput = [];
+  document.getElementById('pw-error').style.display = 'none';
+  updatePwDots(false);
+}
+
+function updatePwDots(isError) {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('d'+i);
+    dot.className = 'pw-dot' + (pwInput.length > i ? (isError ? ' error' : ' filled') : '');
+  }
+}
+
+function pwKey(d) {
+  if (pwInput.length >= 4) return;
+  pwInput.push(d);
+  updatePwDots(false);
+  if (pwInput.length === 4) {
+    const entered = pwInput.join('');
+    if (entered === appPassword) {
+      showPage('page-settings');
+    } else {
+      updatePwDots(true);
+      const dots = document.getElementById('pw-dots');
+      dots.classList.add('shake');
+      document.getElementById('pw-error').style.display = 'block';
+      setTimeout(() => { dots.classList.remove('shake'); pwInput = []; updatePwDots(false); document.getElementById('pw-error').style.display = 'none'; }, 700);
+    }
+  }
+}
+
+function pwDel() {
+  if (pwInput.length > 0) { pwInput.pop(); updatePwDots(false); }
+  document.getElementById('pw-error').style.display = 'none';
+}
+
+// ─── 設定ページ ───
+function renderTplEditor() {
+  editTemplates = templates.map(t => ({...t}));
+  buildTplEditor();
+}
+
+function buildTplEditor() {
+  const wrap = document.getElementById('tpl-editor');
+  wrap.innerHTML = '';
+  editTemplates.forEach((tpl, idx) => {
+    const card = document.createElement('div');
+    card.className = 'tpl-card';
+    card.innerHTML = `
+      <div class="tpl-card-header">
+        <span class="tpl-num">テンプレート ${idx+1}</span>
+        <button class="tpl-del" ${editTemplates.length<=1?'disabled':''} onclick="removeTpl(${tpl.id})">削除</button>
+      </div>
+      <div class="field-label">ラベル名</div>
+      <input type="text" value="${tpl.label}" oninput="updateTplLabel(${tpl.id}, this.value)" placeholder="例：確認・了承">
+      <div class="field-label">メッセージ内容</div>
+      <textarea class="short" oninput="updateTplText(${tpl.id}, this.value)">${tpl.text}</textarea>
+      <div class="char-count">${tpl.text.length}文字</div>
+    `;
+    wrap.appendChild(card);
+  });
+}
+
+function updateTplLabel(id, val) { editTemplates = editTemplates.map(t => t.id===id ? {...t, label:val} : t); }
+function updateTplText(id, val) { editTemplates = editTemplates.map(t => t.id===id ? {...t, text:val} : t); }
+
+function removeTpl(id) {
+  if (editTemplates.length <= 1) return;
+  editTemplates = editTemplates.filter(t => t.id !== id);
+  buildTplEditor();
+}
+
+function addTemplate() {
+  editTemplates.push({ id: Date.now(), label: '新しいテンプレート', text: '' });
+  buildTplEditor();
+}
+
+function saveTemplates() {
+  templates = editTemplates.map(t => ({...t}));
+  const btn = document.getElementById('save-btn');
+  btn.textContent = '✅ 保存しました';
+  btn.classList.add('saved');
+  setTimeout(() => { btn.textContent = '💾 変更を保存'; btn.classList.remove('saved'); }, 2000);
+}
+
+function closeSettings() {
+  showPage('page-main');
+}
+
+// パスワード変更
+function togglePwSection() {
+  const sec = document.getElementById('pw-change-section');
+  const arrow = document.getElementById('pw-toggle-arrow');
+  const visible = sec.style.display !== 'none';
+  sec.style.display = visible ? 'none' : 'flex';
+  arrow.textContent = visible ? '▼' : '▲';
+}
+
+function changePw() {
+  const np = document.getElementById('new-pw').value;
+  const np2 = document.getElementById('new-pw2').value;
+  const msg = document.getElementById('pw-change-msg');
+  msg.style.display = 'block';
+  if (!/^\d{4}$/.test(np)) { msg.className='msg-error'; msg.textContent='⚠️ 4桁の数字で入力してください'; return; }
+  if (np !== np2) { msg.className='msg-error'; msg.textContent='⚠️ パスワードが一致しません'; return; }
+  appPassword = np;
+  document.getElementById('new-pw').value = '';
+  document.getElementById('new-pw2').value = '';
+  msg.className='msg-success'; msg.textContent='✅ パスワードを変更しました';
+  setTimeout(() => { msg.style.display='none'; }, 2500);
+}
+
+// 初期化
+updateStepBar();
+</script>
+</body>
+</html>
