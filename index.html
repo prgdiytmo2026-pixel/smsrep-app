@@ -325,14 +325,22 @@
 
 <script>
 // ─── 状態管理 ───
-let appPassword = "0000";
-let templates = [
+const DEFAULT_TEMPLATES = [
   { id:1, label:"確認・了承", text:"お世話になっております。ご連絡いただきありがとうございます。内容を確認・了承いたしました。何かご不明な点がございましたらお気軽にご連絡ください。" },
   { id:2, label:"折り返し電話", text:"お世話になっております。先ほどお電話をいただきありがとうございました。改めて折り返しご連絡いたします。" },
   { id:3, label:"後ほど連絡", text:"お世話になっております。ご連絡ありがとうございます。確認後、改めてご連絡いたしますので、しばらくお待ちください。" },
   { id:4, label:"日程調整", text:"お世話になっております。ご連絡いただきありがとうございます。ご提示いただいた日程で問題ございません。よろしくお願いいたします。" },
   { id:5, label:"カスタム", text:"" },
 ];
+function loadTemplates() {
+  try { const s = localStorage.getItem('sms_templates'); return s ? JSON.parse(s) : DEFAULT_TEMPLATES.map(t=>({...t})); }
+  catch(e) { return DEFAULT_TEMPLATES.map(t=>({...t})); }
+}
+function loadPassword() {
+  try { return localStorage.getItem('sms_password') || "0000"; } catch(e) { return "0000"; }
+}
+let appPassword = loadPassword();
+let templates = loadTemplates();
 let editTemplates = [];
 let currentStep = 1;
 let phoneNumbers = [];
@@ -552,6 +560,7 @@ function addTemplate() {
 
 function saveTemplates() {
   templates = editTemplates.map(t => ({...t}));
+  try { localStorage.setItem('sms_templates', JSON.stringify(templates)); } catch(e) {}
   const btn = document.getElementById('save-btn');
   btn.textContent = '✅ 保存しました';
   btn.classList.add('saved');
@@ -579,6 +588,7 @@ function changePw() {
   if (!/^\d{4}$/.test(np)) { msg.className='msg-error'; msg.textContent='⚠️ 4桁の数字で入力してください'; return; }
   if (np !== np2) { msg.className='msg-error'; msg.textContent='⚠️ パスワードが一致しません'; return; }
   appPassword = np;
+  try { localStorage.setItem('sms_password', np); } catch(e) {}
   document.getElementById('new-pw').value = '';
   document.getElementById('new-pw2').value = '';
   msg.className='msg-success'; msg.textContent='✅ パスワードを変更しました';
